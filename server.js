@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
 const mongoose = require('mongoose');
-const express = require('express'); // <-- NEW: The Web Server Library
+const express = require('express'); 
 
 // --- 1. Keep-Awake Web Server (For Render) ---
 const app = express();
@@ -15,7 +15,8 @@ app.listen(PORT, () => {
 });
 
 // --- 2. MongoDB Setup ---
-const MONGO_URL = "mongodb+srv://Muaad:Muaad123@cluster0.crs1u2z.mongodb.net/Smartgarden?retryWrites=true&w=majority&appName=Cluster0";
+// Note: Ensure the 'smartgarden' database name matches your Atlas case exactly
+const MONGO_URL = "mongodb+srv://Muaad:Muaad123@cluster0.crs1u2z.mongodb.net/smartgarden?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URL)
   .then(() => console.log('Connected to MongoDB Atlas!'))
@@ -50,12 +51,18 @@ mqttClient.on('connect', () => {
   });
 });
 
-// --- 4. The Bridge (Listen & Save) ---
+// --- 4. The Bridge (Listen, Display & Save) ---
 mqttClient.on('message', async (topic, message) => {
   console.log(`\n--- New message received on topic [${topic}] ---`);
   
+  // Convert the buffer message to a readable string
+  const payloadString = message.toString();
+  
+  // THIS IS THE LINE YOU WANTED: Display the actual data in the terminal
+  console.log('Incoming Data:', payloadString);
+
   try {
-    const jsonData = JSON.parse(message.toString());
+    const jsonData = JSON.parse(payloadString);
     const newReading = new SensorData(jsonData);
     await newReading.save();
     console.log('SUCCESS: Data permanently saved to MongoDB!');
